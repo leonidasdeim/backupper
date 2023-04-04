@@ -8,7 +8,6 @@ import (
 
 type Consumer interface {
 	FileModified(string)
-	FileRenamed(string)
 }
 
 type Notifier struct {

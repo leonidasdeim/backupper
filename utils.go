@@ -51,3 +51,10 @@ func (_utils) CopyFile(in string, out string) error {
 
 	return nil
 }
+
+func (_utils) DeleteFile(path string) error {
+	if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {
+		return nil
+	}
+	return os.Remove(path)
+}
