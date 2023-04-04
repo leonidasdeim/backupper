@@ -4,9 +4,11 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
-// SIGINT
 // LOGGER
 
 const hotFolderFlag = "in"
@@ -23,6 +25,8 @@ func main() {
 		return
 	}
 
+	log.Println("application is starting")
+
 	backupper, err := NewBackupper(*backupDir)
 	if err != nil {
 		log.Println(err)
@@ -38,7 +42,12 @@ func main() {
 
 	go notifier.Watch()
 
-	<-make(chan struct{})
+	interrupt := make(chan os.Signal, 1)
+	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
+
+	<-interrupt
+
+	log.Println("gracefully closing application")
 }
 
 func isFlagPassed(name string) bool {
