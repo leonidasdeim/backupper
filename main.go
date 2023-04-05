@@ -3,54 +3,35 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
-	"os"
-	"os/signal"
-	"syscall"
+
+	"github.com/leonidasdeim/backupper/cmd"
 )
 
-// LOGGER
+// TESTS
 
-const hotFolderFlag = "in"
-const backupFolderFlag = "out"
+const (
+	dirFlag    = "in"
+	backupFlag = "out"
+)
 
 func main() {
-	dir := flag.String(hotFolderFlag, "", "path to hot directory")
-	backupDir := flag.String(backupFolderFlag, "", "path for backup directory")
+	dirPath := flag.String(dirFlag, "", "path to hot directory")
+	backupPath := flag.String(backupFlag, "", "path for backup directory")
 	flag.Parse()
 
-	if !isFlagPassed(hotFolderFlag) ||
-		!isFlagPassed(backupFolderFlag) {
-		fmt.Println("required arguments not provided")
+	if !isFlagPresent(dirFlag) ||
+		!isFlagPresent(backupFlag) {
+		fmt.Println("Required arguments not provided: run with --help for usage")
 		return
 	}
 
-	log.Println("application is starting")
-
-	backupper, err := NewBackupper(*backupDir)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-
-	notifier, err := NewNotifier(*dir, backupper)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-	defer notifier.Close()
-
-	go notifier.Watch()
-
-	interrupt := make(chan os.Signal, 1)
-	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
-
-	<-interrupt
-
-	log.Println("gracefully closing application")
+	cmd.RunApp(cmd.AppProps{
+		HotDir:    *dirPath,
+		BackupDir: *backupPath,
+	})
 }
 
-func isFlagPassed(name string) bool {
+func isFlagPresent(name string) bool {
 	found := false
 	flag.Visit(func(f *flag.Flag) {
 		if f.Name == name {

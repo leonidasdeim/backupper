@@ -1,4 +1,4 @@
-package main
+package internal
 
 import (
 	"fmt"
@@ -30,7 +30,7 @@ type logger struct {
 
 // Create new Logger instance with log file path provided
 func NewLogger(path string) (*logger, error) {
-	file, err := utils.OpenFile(path)
+	file, err := Utils.OpenFile(path)
 	if err != nil {
 		return nil, err
 	}

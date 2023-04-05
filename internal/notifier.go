@@ -1,12 +1,13 @@
-package main
+package internal
 
 import (
-	"log"
+	"fmt"
 
 	"github.com/fsnotify/fsnotify"
 )
 
 type Consumer interface {
+	FileCreated(string)
 	FileModified(string)
 }
 
@@ -15,13 +16,15 @@ type Notifier struct {
 	watcher  *fsnotify.Watcher
 }
 
-func NewNotifier(dir string, consumer Consumer) (*Notifier, error) {
+// Initializes Notifier object for provided directory path
+// Provided consumer will be notified on file events
+func NewNotifier(path string, consumer Consumer) (*Notifier, error) {
 	w, err := fsnotify.NewWatcher()
 	if err != nil {
 		return nil, err
 	}
 
-	if err = w.Add(dir); err != nil {
+	if err = w.Add(path); err != nil {
 		return nil, err
 	}
 
@@ -31,6 +34,8 @@ func NewNotifier(dir string, consumer Consumer) (*Notifier, error) {
 	}, nil
 }
 
+// Runs files events watcher.
+// This function is blocking, should be run from goroutine.
 func (n *Notifier) Watch() {
 	for {
 		select {
@@ -38,18 +43,21 @@ func (n *Notifier) Watch() {
 			if !ok {
 				return
 			}
-			if event.Has(fsnotify.Write) || event.Has(fsnotify.Create) {
+			if event.Has(fsnotify.Create) {
+				go n.consumer.FileCreated(event.Name)
+			} else if event.Has(fsnotify.Write) {
 				go n.consumer.FileModified(event.Name)
 			}
 		case err, ok := <-n.watcher.Errors:
 			if !ok {
 				return
 			}
-			log.Println("error:", err)
+			fmt.Printf("Notifier error: %v\n", err)
 		}
 	}
 }
 
+// Closes Notifier instance
 func (n *Notifier) Close() {
 	n.watcher.Close()
 }

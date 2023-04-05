@@ -1,4 +1,4 @@
-package main
+package cmd
 
 import (
 	"bufio"
@@ -7,10 +7,12 @@ import (
 	"os"
 	"regexp"
 	"strings"
+
+	"github.com/leonidasdeim/backupper/internal"
 )
 
 type logFilter struct {
-	log Log
+	log internal.Log
 	filter
 }
 
@@ -21,19 +23,19 @@ type filter struct {
 
 // Runs log filter prompt setup and log viewer runner.
 // This function is blocking, should be run from goroutine.
-func RunLogFilter(log Log, path string) {
+func RunLogFilter(log internal.Log, path string) {
 	if proceed := prompt("Do you want to view log? y/n"); proceed != "y" {
 		return
 	}
 
 	logFilter{
 		log:    log,
-		filter: resolveFilter(path),
+		filter: configureFilter(path),
 	}.runner()
 }
 
 func (lf logFilter) runner() {
-	utils.FileScanner(
+	internal.Utils.FileScanner(
 		lf.log.GetFile(),
 		func(line string) {
 			lf.applyFilter(line)
@@ -59,32 +61,36 @@ func (lf logFilter) applyFilter(line string) {
 	}
 }
 
-func resolveFilter(path string) filter {
-	if f, err := loadState(path); err == nil && f != nil {
+func configureFilter(path string) filter {
+	if filter, err := state.load(path); err == nil && filter != nil {
 		if proceed := prompt("Do you want to reuse previous filter? y/n"); proceed == "y" {
-			return *f
+			return *filter
 		}
 	}
 
-	newFilter := filter{
-		Date: prompt("Enter date filter (YYYY-MM-DD) or leave blank"),
-		Name: prompt("Enter file name filter (regex) or leave blank"),
+	filter := filter{
+		Date: prompt("Enter date filter (YYYY-MM-DD) or leave blank to match all"),
+		Name: prompt("Enter file name filter (regex) or leave blank to match all"),
 	}
-	saveState(path, newFilter)
+	state.save(path, filter)
 
-	return newFilter
+	return filter
 }
 
-func saveState(path string, f filter) error {
+type _filterState struct{}
+
+var state = _filterState{}
+
+func (_filterState) save(path string, f filter) error {
 	data, err := json.Marshal(f)
 	if err != nil {
 		return err
 	}
-	return utils.OverwriteFile(path, data)
+	return internal.Utils.OverwriteFile(path, data)
 }
 
-func loadState(path string) (*filter, error) {
-	data, err := utils.ReadFile(path)
+func (_filterState) load(path string) (*filter, error) {
+	data, err := internal.Utils.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
