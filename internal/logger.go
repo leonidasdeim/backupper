@@ -7,7 +7,10 @@ import (
 	"time"
 )
 
-const chanBufferLen = 50
+const (
+	chanBufferLen  = 50
+	dateTimeFormat = "2006-01-02 15:04:05"
+)
 
 type Log interface {
 	Created(string)
@@ -88,7 +91,7 @@ func (l *logger) putLog(message string) {
 		return
 	}
 
-	t := time.Now().Format(time.DateTime)
+	t := time.Now().Format(dateTimeFormat)
 	m := fmt.Sprintf("%s | %s", t, message)
 
 	l.log.Printf(m)

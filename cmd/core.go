@@ -43,7 +43,7 @@ func RunApp(props AppProps) {
 
 	go RunLogFilter(logger, stateFile)
 	go notifier.Watch()
-	fmt.Printf("Initialization successful. Backing up directory: [%s], to: [%s]\n",
+	fmt.Printf("Initialization successful. Backing up directory: \"%s\", to: \"%s\"\n",
 		props.HotDir,
 		props.BackupDir,
 	)
