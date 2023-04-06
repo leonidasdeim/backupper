@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/fsnotify/fsnotify"
@@ -19,9 +20,13 @@ type Notifier struct {
 // Initializes Notifier object for provided directory path
 // Provided consumer will be notified on file events
 func NewNotifier(path string, consumer Consumer) (*Notifier, error) {
+	if consumer == nil {
+		return nil, errors.New("consumer object is not provided")
+	}
+
 	w, err := fsnotify.NewWatcher()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("can't create new watcher instance: %v", err)
 	}
 
 	if err = w.Add(path); err != nil {

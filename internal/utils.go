@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 const (
@@ -113,5 +114,16 @@ func (_utils) FileScanner(file *os.File, cb func(string)) {
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		cb(scanner.Text())
+	}
+}
+
+// Utility for CLI prompt messages
+func (_utils) Prompt(text string) string {
+	reader := bufio.NewReader(os.Stdin)
+	for {
+		fmt.Printf("- %s: \n", text)
+		if answer, _ := reader.ReadString('\n'); answer != "" {
+			return strings.TrimSpace(answer)
+		}
 	}
 }

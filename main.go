@@ -2,33 +2,36 @@ package main
 
 import (
 	"flag"
-	"fmt"
 
 	"github.com/leonidasdeim/backupper/cmd"
+	"github.com/leonidasdeim/backupper/internal"
 )
-
-// TESTS
 
 const (
 	dirFlag    = "in"
 	backupFlag = "out"
 )
 
+var _ cmd.AppState = (*internal.State)(nil)
+var _ cmd.FilterState = (*internal.State)(nil)
+
 func main() {
-	dirPath := flag.String(dirFlag, "", "path to hot directory")
-	backupPath := flag.String(backupFlag, "", "path for backup directory")
+	hot := flag.String(dirFlag, "", "path to hot directory")
+	backup := flag.String(backupFlag, "", "path for backup directory")
 	flag.Parse()
 
-	if !isFlagPresent(dirFlag) ||
-		!isFlagPresent(backupFlag) {
-		fmt.Println("Required arguments not provided: run with --help for usage")
-		return
+	state := internal.LoadState(cmd.StateFile)
+
+	if isFlagPresent(dirFlag) && isFlagPresent(backupFlag) {
+		state.SetDirectories(
+			internal.Directories{
+				Hot:    *hot,
+				Backup: *backup,
+			},
+		).Save()
 	}
 
-	cmd.RunApp(cmd.AppProps{
-		HotDir:    *dirPath,
-		BackupDir: *backupPath,
-	})
+	cmd.RunApp(&state)
 }
 
 func isFlagPresent(name string) bool {

@@ -11,45 +11,56 @@ import (
 
 const (
 	appName   = "backupper"
-	logFile   = appName + ".log"
-	stateFile = appName + ".tmp"
+	LogFile   = appName + ".log"
+	StateFile = appName + ".tmp"
 )
 
-type AppProps struct {
-	HotDir    string
-	BackupDir string
+type AppState interface {
+	SetState(state internal.Data)
+	SetFilter(filter internal.Filter) *internal.State
+	GetFilter() *internal.Filter
+	SetDirectories(dirs internal.Directories) *internal.State
+	GetDirectories() *internal.Directories
+	Save() error
 }
 
-func RunApp(props AppProps) {
-	logger, err := internal.NewLogger(logFile)
+func RunApp(state AppState) {
+	dirs := state.GetDirectories()
+	if dirs == nil {
+		fmt.Println("Can't start app: paths for hot/backup folders are not provided")
+		return
+	}
+
+	logger, err := internal.NewLogger(LogFile)
 	if err != nil {
-		fmt.Println("Logger initialization error: ", err)
+		fmt.Println("Logger init error: ", err)
 		return
 	}
 	defer logger.Close()
 
-	backupper, err := internal.NewBackupper(props.BackupDir, logger)
+	backupper, err := internal.NewBackupper(dirs.Backup, logger)
 	if err != nil {
-		fmt.Println("Backupper initialization error: ", err)
+		fmt.Println("Backupper init error: ", err)
 		return
 	}
 
-	notifier, err := internal.NewNotifier(props.HotDir, backupper)
+	notifier, err := internal.NewNotifier(dirs.Hot, backupper)
 	if err != nil {
-		fmt.Println("Notifier initialization error: ", err)
+		fmt.Println("Notifier init error: ", err)
 		return
 	}
 	defer notifier.Close()
 
-	go RunLogFilter(logger, stateFile)
 	go notifier.Watch()
-	fmt.Printf("Initialization successful. Backing up directory: \"%s\", to: \"%s\"\n",
-		props.HotDir,
-		props.BackupDir,
+	fmt.Printf("Backup in progress...\n- Hot folder: %s \n- Backup folder: %s\n\n",
+		dirs.Hot,
+		dirs.Backup,
 	)
+	go RunLogViewer(logger, state)
 
+	// wait for SIGTERM or SIGINT to close application
 	interrupt := make(chan os.Signal, 1)
-	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
+	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
 	<-interrupt
 
 	fmt.Println("Gracefully closing application")

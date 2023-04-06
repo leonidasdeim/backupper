@@ -19,7 +19,7 @@ type Log interface {
 	Backup(string)
 	Error(string)
 	GetFile() *os.File
-	ReadActiveLog() chan string
+	RealTimeLog() chan string
 	Close()
 }
 
@@ -35,7 +35,7 @@ type logger struct {
 func NewLogger(path string) (*logger, error) {
 	file, err := Utils.OpenFile(path)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("can't open log file: %v", err)
 	}
 
 	return &logger{
@@ -48,7 +48,12 @@ func NewLogger(path string) (*logger, error) {
 // Closes logger instance
 func (l *logger) Close() {
 	l.file.Close()
-	close(l.ch)
+
+	select {
+	case <-l.ch:
+	default:
+		close(l.ch)
+	}
 }
 
 // Logs 'created' message to log file
@@ -81,8 +86,8 @@ func (l *logger) GetFile() *os.File {
 	return l.file
 }
 
-// Returns channel for active log messages
-func (l *logger) ReadActiveLog() chan string {
+// Returns channel for real time log messages
+func (l *logger) RealTimeLog() chan string {
 	return l.ch
 }
 
@@ -95,6 +100,8 @@ func (l *logger) putLog(message string) {
 	m := fmt.Sprintf("%s | %s", t, message)
 
 	l.log.Printf(m)
+
+	// try to put log message to channel
 	select {
 	case l.ch <- m:
 	default:

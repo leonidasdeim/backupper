@@ -9,6 +9,20 @@ build:
 	if ! [ -d ${BUILD_DIR} ] ; then mkdir ${BUILD_DIR} ; fi
 	go build -o ${BUILD_DIR}/${FILE_NAME} .;
 
+.PHONY: test
+test: 
+	go test -v -count=1 ./...;
+
+.PHONY: clean
+clean:
+	if [ -d ${BUILD_DIR} ] ; then rm -rf ${BUILD_DIR} ; fi
+	if [ -d ${TMP_DIR} ] ; then rm -rf ${TMP_DIR} ; fi
+
+
+######################################################
+# jobs bellow are for demo purposes only
+######################################################
+
 .PHONY: run_demo
 run_demo: 
 	if ! [ -d ${TMP_DIR} ] ; then mkdir ${TMP_DIR} ; fi
@@ -19,7 +33,8 @@ run_demo:
 .PHONY: build_run_demo
 build_run_demo: build run_demo
 
-.PHONY: clean
-clean:
-	if [ -d ${BUILD_DIR} ] ; then rm -rf ${BUILD_DIR} ; fi
-	if [ -d ${TMP_DIR} ] ; then rm -rf ${TMP_DIR} ; fi
+.PHONY: second_run_demo
+second_run_demo: 
+	cd ${TMP_DIR};\
+	../${BUILD_DIR}/${FILE_NAME};
+

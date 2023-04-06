@@ -3,7 +3,7 @@ package internal
 import (
 	"errors"
 	"fmt"
-	"path"
+	pathUtils "path"
 	"path/filepath"
 	"strings"
 )
@@ -23,6 +23,10 @@ var _ Consumer = (*Backupper)(nil)
 // Return new Backupper instance. It implements Consumer interface.
 // Receives path to backup directory and logger instance
 func NewBackupper(path string, log Log) (*Backupper, error) {
+	if log == nil {
+		return nil, errors.New("logger object is not provided")
+	}
+
 	if err := Utils.CreateFolder(path); err != nil {
 		return nil, fmt.Errorf("can't create backup directory: %v", err)
 	}
@@ -33,53 +37,55 @@ func NewBackupper(path string, log Log) (*Backupper, error) {
 	}, nil
 }
 
-func (b *Backupper) FileCreated(file string) {
-	if !Utils.IsFile(file) {
+// Callback function for 'file created' event. Argument - path to the file
+func (b *Backupper) FileCreated(path string) {
+	if !Utils.IsFile(path) {
 		return
 	}
-	filename := filepath.Base(file)
+	filename := filepath.Base(path)
 
-	if strings.HasPrefix(filepath.Base(file), deletePrefix) {
-		if err := b.delete(file); err != nil {
+	if strings.HasPrefix(filepath.Base(path), deletePrefix) {
+		if err := b.delete(path); err != nil {
 			b.log.Error(filename)
 		}
 		return
 	}
 
 	b.log.Created(filename)
-	if err := b.backup(file); err != nil {
+	if err := b.backup(path); err != nil {
 		b.log.Error(filename)
 	}
 }
 
-func (b *Backupper) FileModified(file string) {
-	if !Utils.IsFile(file) {
+// Callback function for 'file modified' event. Argument - path to the file
+func (b *Backupper) FileModified(path string) {
+	if !Utils.IsFile(path) {
 		return
 	}
-	filename := filepath.Base(file)
+	filename := filepath.Base(path)
 
 	b.log.Modified(filename)
-	if err := b.backup(file); err != nil {
+	if err := b.backup(path); err != nil {
 		b.log.Error(filename)
 	}
 }
 
-func (b *Backupper) backup(file string) error {
-	backupFile := path.Join(b.directory, filepath.Base(file)+extension)
+func (b *Backupper) backup(path string) error {
+	backupFile := pathUtils.Join(b.directory, filepath.Base(path)+extension)
 
-	if err := Utils.CopyFile(file, backupFile); err != nil {
+	if err := Utils.CopyFile(path, backupFile); err != nil {
 		return errors.New("copy error")
 	}
 
-	b.log.Backup(filepath.Base(file))
+	b.log.Backup(filepath.Base(path))
 	return nil
 }
 
-func (b *Backupper) delete(file string) error {
-	originalName := strings.TrimPrefix(filepath.Base(file), deletePrefix)
-	backupFile := path.Join(b.directory, originalName+extension)
+func (b *Backupper) delete(path string) error {
+	originalName := strings.TrimPrefix(filepath.Base(path), deletePrefix)
+	backupFile := pathUtils.Join(b.directory, originalName+extension)
 
-	if err := Utils.DeleteFile(file); err != nil {
+	if err := Utils.DeleteFile(path); err != nil {
 		return errors.New("delete error")
 	}
 

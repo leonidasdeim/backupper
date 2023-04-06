@@ -16,24 +16,38 @@ Easiest way to build executable is to use provided Makefile:
 make build
 ```
 
-Run executable with required arguments for hot folder and backup folder:
+Run executable with arguments for hot folder and backup folder:
 ```
-./out/backupper --in={hot_folder_path} --out={backend_folder_path}
+./out/backupper --in={hot_folder_path} --out={backup_folder_path}
 ```
 
-## Demo mode
+Application will save state of hot, backup folder paths and log view filters. On subsequent application start arguments could not be provided and previous state would be used.
 
-Demo job is provided in Makefile, it will build and run executable in temporary folder:
+### Run in demo mode
+
+Demo job is provided in the Makefile, it will build and run executable in 'tmp' folder and provide paths to 'hot' and 'backup' folders inside 'tmp' folder:
 ```
 make build_run_demo
 ```
 
-Cleanup after running application in demo:
+To demonstrate state persistence, there is another demo job in the Makefile, it is supposed to be run after 'build_run_demo' is stopped. It does not provide folder paths, so application loads previously used paths:
+```
+make second_run_demo
+```
+
+### Other makefile jobs
+
+Cleanup after building/running application:
 ```
 make clean
 ```
 
-## Log view
+Run tests:
+```
+make test
+```
+
+### Log view
 
 On application start it will prompt for log viewer filter information.
 
