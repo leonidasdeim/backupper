@@ -3,10 +3,12 @@ package internal
 import (
 	"strings"
 	"testing"
+
+	"github.com/leonidasdeim/backupper/internal/utils"
 )
 
 func setupLoggerTest() {
-	Utils.CreateFolder(testDir)
+	utils.CreateFolder(testDir)
 }
 
 func Test_NewLogger_BadPath_ReturnsError(t *testing.T) {
@@ -39,7 +41,7 @@ func Test_NewLogger_CorrectPath_ShouldCreateFile(t *testing.T) {
 		t.FailNow()
 	}
 
-	if !Utils.IsFile(testFile) {
+	if !utils.IsFile(testFile) {
 		t.Log("should create log file")
 		t.FailNow()
 	}
@@ -63,8 +65,8 @@ func Test_NewLogger_SendLog_ShouldLogToFile(t *testing.T) {
 	l.Error("filename")
 
 	numberOfLines := 0
-	file, _ := Utils.OpenFile(testFile)
-	Utils.FileScanner(file, func(s string) {
+	file, _ := utils.OpenFile(testFile)
+	utils.FileScanner(file, func(s string) {
 		numberOfLines++
 	})
 

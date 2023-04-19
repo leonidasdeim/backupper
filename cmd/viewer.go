@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/leonidasdeim/backupper/internal"
+	"github.com/leonidasdeim/backupper/internal/utils"
 )
 
 type FilterState interface {
@@ -18,8 +19,6 @@ type viewer struct {
 	log    internal.Log
 	filter internal.Filter
 }
-
-var utils = internal.Utils
 
 // Runs log filter prompt setup and log viewer runner.
 // This function is blocking, should be run from goroutine.

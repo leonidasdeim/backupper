@@ -1,4 +1,4 @@
-package internal
+package utils
 
 import (
 	"bufio"
@@ -13,15 +13,11 @@ import (
 const (
 	appendFileFlags = os.O_RDWR | os.O_CREATE | os.O_APPEND
 	truncFileFlags  = os.O_RDWR | os.O_CREATE | os.O_TRUNC
-	filePerms       = 0644
+	FilePerms       = 0644
 )
 
-type _utils struct{}
-
-var Utils = _utils{}
-
 // Creates folder if it does not exist
-func (_utils) CreateFolder(path string) error {
+func CreateFolder(path string) error {
 	if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {
 		return os.Mkdir(path, os.ModePerm)
 	}
@@ -29,7 +25,7 @@ func (_utils) CreateFolder(path string) error {
 }
 
 // Checks if path is a file
-func (_utils) IsFile(path string) bool {
+func IsFile(path string) bool {
 	f, err := os.Stat(path)
 	if err != nil {
 		return false
@@ -38,14 +34,14 @@ func (_utils) IsFile(path string) bool {
 }
 
 // Copies file from 'in' path to 'out' path
-func (_utils) CopyFile(in string, out string) error {
+func CopyFile(in string, out string) error {
 	fin, err := os.Open(in)
 	if err != nil {
 		return fmt.Errorf("can't open a file: %v", err)
 	}
 	defer fin.Close()
 
-	err = Utils.CreateFolder(filepath.Dir(out))
+	err = CreateFolder(filepath.Dir(out))
 	if err != nil {
 		return fmt.Errorf("error while creating output directory: %v", err)
 	}
@@ -64,8 +60,8 @@ func (_utils) CopyFile(in string, out string) error {
 }
 
 // Overwrites existing file or creates new one
-func (_utils) OverwriteFile(path string, data []byte) error {
-	f, err := os.OpenFile(path, truncFileFlags, filePerms)
+func OverwriteFile(path string, data []byte) error {
+	f, err := os.OpenFile(path, truncFileFlags, FilePerms)
 	if err != nil {
 		return err
 	}
@@ -79,8 +75,8 @@ func (_utils) OverwriteFile(path string, data []byte) error {
 }
 
 // Get file contents
-func (_utils) ReadFile(path string) ([]byte, error) {
-	f, err := os.OpenFile(path, os.O_RDONLY, filePerms)
+func ReadFile(path string) ([]byte, error) {
+	f, err := os.OpenFile(path, os.O_RDONLY, FilePerms)
 	if err != nil {
 		return nil, err
 	}
@@ -94,11 +90,11 @@ func (_utils) ReadFile(path string) ([]byte, error) {
 	return res, nil
 }
 
-func (_utils) OpenFile(path string) (*os.File, error) {
-	return os.OpenFile(path, appendFileFlags, filePerms)
+func OpenFile(path string) (*os.File, error) {
+	return os.OpenFile(path, appendFileFlags, FilePerms)
 }
 
-func (_utils) DeleteFile(path string) error {
+func DeleteFile(path string) error {
 	if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {
 		return nil
 	}
@@ -106,7 +102,7 @@ func (_utils) DeleteFile(path string) error {
 }
 
 // Scans file and calls callback function for each line
-func (_utils) FileScanner(file *os.File, cb func(string)) {
+func FileScanner(file *os.File, cb func(string)) {
 	if file == nil || cb == nil {
 		return
 	}
@@ -118,7 +114,7 @@ func (_utils) FileScanner(file *os.File, cb func(string)) {
 }
 
 // Utility for CLI prompt messages
-func (_utils) Prompt(text string) string {
+func Prompt(text string) string {
 	reader := bufio.NewReader(os.Stdin)
 	for {
 		fmt.Printf("- %s: \n", text)

@@ -5,6 +5,8 @@ import (
 	"log"
 	"os"
 	"time"
+
+	"github.com/leonidasdeim/backupper/internal/utils"
 )
 
 const (
@@ -33,7 +35,7 @@ type logger struct {
 
 // Create new Logger instance with log file path provided
 func NewLogger(path string) (*logger, error) {
-	file, err := Utils.OpenFile(path)
+	file, err := utils.OpenFile(path)
 	if err != nil {
 		return nil, fmt.Errorf("can't open log file: %v", err)
 	}

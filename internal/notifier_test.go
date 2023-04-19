@@ -4,10 +4,12 @@ import (
 	"os"
 	"testing"
 	"time"
+
+	"github.com/leonidasdeim/backupper/internal/utils"
 )
 
 func setupNotifierTest() {
-	Utils.CreateFolder(testDir)
+	utils.CreateFolder(testDir)
 }
 
 func Test_NewNotifier_BadConsumer_ReturnsError(t *testing.T) {
@@ -53,11 +55,11 @@ func Test_NewNotifier_FilesCreated_NotifiesConsumer(t *testing.T) {
 
 	go n.Watch()
 
-	Utils.OpenFile(testFile + "0")
-	Utils.OpenFile(testFile + "1")
-	Utils.OpenFile(testFile + "2")
-	Utils.OpenFile(deleteTestFile + "1")
-	Utils.OpenFile(deleteTestFile + "2")
+	utils.OpenFile(testFile + "0")
+	utils.OpenFile(testFile + "1")
+	utils.OpenFile(testFile + "2")
+	utils.OpenFile(deleteTestFile + "1")
+	utils.OpenFile(deleteTestFile + "2")
 
 	// wait for events to be created in notifiers goroutine
 	time.Sleep(100 * time.Millisecond)
@@ -82,14 +84,14 @@ func Test_NewNotifier_FilesModified_NotifiesConsumer(t *testing.T) {
 
 	go n.Watch()
 
-	Utils.OpenFile(testFile)
-	Utils.OpenFile(deleteTestFile)
+	utils.OpenFile(testFile)
+	utils.OpenFile(deleteTestFile)
 
-	os.WriteFile(testFile, []byte{1}, filePerms)
-	os.WriteFile(testFile, []byte{2}, filePerms)
-	os.WriteFile(testFile, []byte{3}, filePerms)
-	os.WriteFile(deleteTestFile, []byte{1}, filePerms)
-	os.WriteFile(deleteTestFile, []byte{2}, filePerms)
+	os.WriteFile(testFile, []byte{1}, utils.FilePerms)
+	os.WriteFile(testFile, []byte{2}, utils.FilePerms)
+	os.WriteFile(testFile, []byte{3}, utils.FilePerms)
+	os.WriteFile(deleteTestFile, []byte{1}, utils.FilePerms)
+	os.WriteFile(deleteTestFile, []byte{2}, utils.FilePerms)
 
 	// wait for events to be created in notifiers goroutine
 	time.Sleep(100 * time.Millisecond)

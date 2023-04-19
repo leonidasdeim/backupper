@@ -1,6 +1,10 @@
 package internal
 
-import "encoding/json"
+import (
+	"encoding/json"
+
+	"github.com/leonidasdeim/backupper/internal/utils"
+)
 
 type Filter struct {
 	Date string `json:"date"`
@@ -27,7 +31,7 @@ func LoadState(path string) State {
 		path: path,
 	}
 
-	data, err := Utils.ReadFile(path)
+	data, err := utils.ReadFile(path)
 	if err != nil {
 		return p
 	}
@@ -68,5 +72,5 @@ func (p *State) Save() error {
 	if err != nil {
 		return err
 	}
-	return Utils.OverwriteFile(p.path, data)
+	return utils.OverwriteFile(p.path, data)
 }

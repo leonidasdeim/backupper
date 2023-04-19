@@ -4,13 +4,15 @@ import (
 	"path"
 	"strings"
 	"testing"
+
+	"github.com/leonidasdeim/backupper/internal/utils"
 )
 
 func setupBackupperTest() {
-	Utils.CreateFolder(testDir)
-	Utils.CreateFolder(testMockDir)
-	Utils.OpenFile(testFile)
-	Utils.OpenFile(deleteTestFile)
+	utils.CreateFolder(testDir)
+	utils.CreateFolder(testMockDir)
+	utils.OpenFile(testFile)
+	utils.OpenFile(deleteTestFile)
 }
 
 func Test_NewBackupper_LoggerNotProvided_ReturnsError(t *testing.T) {
@@ -72,7 +74,7 @@ func Test_FileCreated_Successful_ShouldCopyFile(t *testing.T) {
 	}
 
 	b.FileCreated(testFile)
-	if !Utils.IsFile(testBackupDir + path.Base(testFile) + extension) {
+	if !utils.IsFile(testBackupDir + path.Base(testFile) + extension) {
 		t.Logf("backup file should exist")
 		t.FailNow()
 	}
@@ -90,7 +92,7 @@ func Test_FileCreated_FolderPassed_ShouldNotCopyFolder(t *testing.T) {
 	}
 
 	b.FileCreated(testMockDir)
-	if Utils.IsFile(testBackupDir + path.Base(testMockDir) + extension) {
+	if utils.IsFile(testBackupDir + path.Base(testMockDir) + extension) {
 		t.Logf("backup file should not exist")
 		t.FailNow()
 	}
@@ -108,7 +110,7 @@ func Test_FileCreated_DeletePrefix_ShouldDeleteFile(t *testing.T) {
 	}
 
 	b.FileCreated(deleteTestFile)
-	if Utils.IsFile(deleteTestFile) {
+	if utils.IsFile(deleteTestFile) {
 		t.Logf("backup file should be deleted")
 		t.FailNow()
 	}
@@ -126,7 +128,7 @@ func Test_FileModified_Successful_ShouldBackupFile(t *testing.T) {
 	}
 
 	b.FileModified(testFile)
-	if !Utils.IsFile(testBackupDir + path.Base(testFile) + extension) {
+	if !utils.IsFile(testBackupDir + path.Base(testFile) + extension) {
 		t.Logf("backup file should exist")
 		t.FailNow()
 	}
@@ -144,7 +146,7 @@ func Test_FileModified_FolderPassed_ShouldNotCopyFolder(t *testing.T) {
 	}
 
 	b.FileModified(testMockDir)
-	if Utils.IsFile(testBackupDir + path.Base(testMockDir) + extension) {
+	if utils.IsFile(testBackupDir + path.Base(testMockDir) + extension) {
 		t.Logf("backup file should not exist")
 		t.FailNow()
 	}

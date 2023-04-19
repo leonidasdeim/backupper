@@ -6,6 +6,8 @@ import (
 	pathUtils "path"
 	"path/filepath"
 	"strings"
+
+	"github.com/leonidasdeim/backupper/internal/utils"
 )
 
 const (
@@ -27,7 +29,7 @@ func NewBackupper(path string, log Log) (*Backupper, error) {
 		return nil, errors.New("logger object is not provided")
 	}
 
-	if err := Utils.CreateFolder(path); err != nil {
+	if err := utils.CreateFolder(path); err != nil {
 		return nil, fmt.Errorf("can't create backup directory: %v", err)
 	}
 
@@ -39,7 +41,7 @@ func NewBackupper(path string, log Log) (*Backupper, error) {
 
 // Callback function for 'file created' event. Argument - path to the file
 func (b *Backupper) FileCreated(path string) {
-	if !Utils.IsFile(path) {
+	if !utils.IsFile(path) {
 		return
 	}
 	filename := filepath.Base(path)
@@ -59,7 +61,7 @@ func (b *Backupper) FileCreated(path string) {
 
 // Callback function for 'file modified' event. Argument - path to the file
 func (b *Backupper) FileModified(path string) {
-	if !Utils.IsFile(path) {
+	if !utils.IsFile(path) {
 		return
 	}
 	filename := filepath.Base(path)
@@ -73,7 +75,7 @@ func (b *Backupper) FileModified(path string) {
 func (b *Backupper) backup(path string) error {
 	backupFile := pathUtils.Join(b.directory, filepath.Base(path)+extension)
 
-	if err := Utils.CopyFile(path, backupFile); err != nil {
+	if err := utils.CopyFile(path, backupFile); err != nil {
 		return errors.New("copy error")
 	}
 
@@ -85,11 +87,11 @@ func (b *Backupper) delete(path string) error {
 	originalName := strings.TrimPrefix(filepath.Base(path), deletePrefix)
 	backupFile := pathUtils.Join(b.directory, originalName+extension)
 
-	if err := Utils.DeleteFile(path); err != nil {
+	if err := utils.DeleteFile(path); err != nil {
 		return errors.New("delete error")
 	}
 
-	if err := Utils.DeleteFile(backupFile); err != nil {
+	if err := utils.DeleteFile(backupFile); err != nil {
 		return errors.New("backup delete error")
 	}
 

@@ -3,6 +3,8 @@ package internal
 import (
 	"reflect"
 	"testing"
+
+	"github.com/leonidasdeim/backupper/internal/utils"
 )
 
 const (
@@ -22,8 +24,8 @@ const (
 )
 
 func setupStateTest() {
-	Utils.CreateFolder(testDir)
-	Utils.OpenFile(testFile)
+	utils.CreateFolder(testDir)
+	utils.OpenFile(testFile)
 }
 
 func Test_LoadState_ProvidePath_SetsPath(t *testing.T) {
@@ -49,7 +51,7 @@ func Test_LoadState_ProvideStateFile_ReturnsState(t *testing.T) {
 	setupStateTest()
 	defer cleanupTest()
 
-	Utils.OverwriteFile(testFile, []byte(testStateString))
+	utils.OverwriteFile(testFile, []byte(testStateString))
 
 	state := LoadState(testFile)
 
